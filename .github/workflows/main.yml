@@ -1,0 +1,35 @@
+# This workflow will build the project, run the Cucumber tests,
+# publish the test results as a build summary.
+name: Build E2E Test Suite
+
+on:
+  workflow_dispatch:
+
+jobs:
+  build:
+   
+    runs-on: [ 'atc-ubuntu-latest' ]
+    
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v3
+       
+      - name: JDK and Maven
+        uses: QMC/qmc-github-actions/setup-jdk-maven@v1
+        with:
+          java-version: 17
+          repo-3rd-party-user: qqovc10
+          repo-3rd-party-token: ${{ secrets.THIRD_PARTY_GITHUB_TOKEN }}
+
+      - name: Test
+        run: mvn clean verify
+      - uses: deblockt/cucumber-report-annotations-action@v1.7
+        with:
+          access-token: ${{ secrets.GITHUB_TOKEN }}
+          path: "**/cucumber.json"
+          
+      - name: Reports
+        uses: peaceiris/actions-gh-pages@v3
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          publish_dir: ./target/cucumber-report-html/cucumber-html-reports
